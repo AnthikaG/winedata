@@ -1,0 +1,70 @@
+---
+title: "Wine Data Knn"
+output: html_notebook
+---
+
+
+```{r}
+library(caret)
+```
+
+```{r}
+dataurl <- "https://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data"
+download.file(url = dataurl, destfile = "wine.data")
+wine_df <- read.csv("wine.data", header = FALSE)
+```
+```{r}
+# structure of data frame
+str(wine_df)
+```
+```{r}
+#Data Slicing
+set.seed(3033)
+intrain <- createDataPartition(y = wine_df$V1, p= 0.7, list = FALSE)
+training <- wine_df[intrain,]
+testing <- wine_df[-intrain,]
+```
+
+```{r}
+#checking the dimensions of our training data frame and testing data frame
+dim(training); dim(testing);
+```
+
+```{r}
+# check whether our data contains missing values
+anyNA(wine_df)
+```
+```{r}
+summary(wine_df)
+```
+
+```{r}
+#target variable consists of 3 values 1, 2, 3. These should considered as categorical variables. To convert these to categorical variables, we can convert them to factors.
+training[["V1"]] = factor(training[["V1"]])
+```
+
+```{r}
+trctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+set.seed(3333)
+knn_fit <- train(V1 ~., data = training, method = "knn",
+ trControl=trctrl,
+ preProcess = c("center", "scale"),
+ tuneLength = 10)
+```
+
+```{r}
+knn_fit
+```
+```{r}
+test_pred = predict(knn_fit, newdata = testing)
+ test_pred
+```
+```{r}
+confusionMatrix(test_pred,as.factor(testing$V1))
+```
+
+
+```{r}
+#confusionMatrix(test_pred, testing$V1)
+```
+
